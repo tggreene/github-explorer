@@ -5,13 +5,31 @@
               [secretary.core :as secretary :include-macros true]
               [goog.events :as events]
               [goog.history.EventType :as EventType]
+              [ghe.time :refer [human-time]]
+              [ghe.graph :refer [create-graph]]
               [ghe.github :as gh])
     (:import goog.History))
 
 ;; -------------------------
-;; Logic?
+;; Constants
 
-(def state (atom {:doc {} :saved? false}))
+(def sample-data
+  {:data
+    {:columns [["commits" 10 20 23 20 19 40 4  1  0  0  2  3]
+               ["watches" 0  0  0  3  4  20 40 44 56 21 3  0]]}
+   :axis {:x {:type "category"
+              :categories ["Jan" "Feb" "Mar" "Apr"
+                           "May" "Jun" "Jul" "Aug"
+                           "Sep" "Oct" "Nov" "Dec"]}}})
+;; -------------------------
+;; Logic
+
+(defonce state (atom {:doc {} :saved? false}))
+
+(defonce timer (atom (js/Date.)))
+
+(defonce time-updater (js/setInterval
+                       #(reset! timer (js/Date.)) 1000))
 
 (defn set-value! [id value]
   (swap! state assoc :saved? false)
@@ -23,51 +41,46 @@
 ;; -------------------------
 ;; Components
 
-(defn row [label & body]
-  [:div.row
-   [:div.col-md-2 {:key 1} [:span label]]
-   [:div.col-md-3 {:key 2} body]])
-
-(defn text-input [id label]
- [row label
-  [:input
-    {:key id
-     :type "text"
-     :class "form-control"
-     :value (get-value id)
-     :on-change #(set-value! id (-> % .-target .-value))}]])
-
 (defn activity-history [events]
   (for [event events]
     [:div {:key (get event "id")}
      [:div
       [:h3 (get event "type")]
-      [:p (get event "id")]]]))
+      [:p  (human-time (get event "created_at"))]]]))
+
+(defn plot-activity-history [events]
+  (create-graph ".graph" {:data {:columns [["a" 1 2 3] ["b" 2 3 5]]}}))
 
 ;; -------------------------
 ;; Views
 
+; (def load (with-meta identity {:component-did-mount #(println "reach")} [:div ]))
+;{:component-did-mount #(create-graph ".graph" sample-data)})
+
+(defn search-repo []
+  (gh/get-repo 1 (get-value :repo)
+   (fn [response]
+     (set-value! :events response))))
+
+(def show-graph
+  ^{:component-did-mount #(create-graph ".graph" sample-data)}
+  (fn [] [:div.graph]))
+
 (defn home-page []
   [:div
-    [:div.page-header [:h1 "Github Explorer"]]
-
-    ; [text-input :first-name "First name"]
-    ; [text-input :last-name "Second name"]
-
-    [:div.row
-     [:div.col-sm-6
-      ; [:button {:type "submit"
-      ;           :class "btn btn-default"
-      ;           :onClick #(.log js/console (clj->js @state))}
-      ; "Submit"]
-      [:button {:type "submit"
-                :class "btn btn-default"
-                :onClick #(gh/get-repo
-                          1 "facebook" "react" (fn [response]
-                            (set-value! :events response)))}
-       "History"]]]
-    [:div (activity-history (get-value :events))]])
-
+   [:div.page-header [:h1 "Github Explorer"]]
+   [:div.row
+    [:div.col-md-6
+     [:input {:key :repo
+              :type "text"
+              :class "form-control"
+              :value (get-value :repo)
+              :placeholder "Repo..."
+              :on-key-down #(if (= 13 (.-keyCode %)) (fn [_] (search-repo)))
+              :on-change (fn [event]
+                          (set-value! :repo (-> event .-target .-value)))}]]]
+   [show-graph]
+   [:div (activity-history (take 5 (get-value :events)))]])
 
 (defn about-page []
   [:div [:h2 "About ghe"]
@@ -78,6 +91,7 @@
 
 ;; -------------------------
 ;; Routes
+
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
@@ -89,6 +103,7 @@
 ;; -------------------------
 ;; History
 ;; must be called after routes have been defined
+
 (defn hook-browser-navigation! []
   (doto (History.)
     (events/listen
@@ -99,6 +114,7 @@
 
 ;; -------------------------
 ;; Initialize app
+
 (defn mount-root []
   (reagent/render [current-page] (.getElementById js/document "app")))
 

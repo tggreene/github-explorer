@@ -10,12 +10,17 @@
                  [reagent-forms "0.5.11"]
                  [reagent-utils "0.1.5"]
                  [cljs-ajax "0.5.0"]
+                 [cljsjs/moment "2.10.6-0"]
+                 [cljsjs/c3 "0.4.10-0"]
+                 [cljsjs/d3 "3.5.5-3"]
+                 [net.drib/strokes "0.5.1"]
                  [ring "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
                  [prone "0.8.2"]
                  [compojure "1.4.0"]
                  [hiccup "1.0.5"]
                  [environ "1.0.1"]
+                 [com.andrewmcveigh/cljs-time "0.3.13"]
                  [org.clojure/clojurescript "1.7.122" :scope "provided"]
                  [secretary "1.2.3"]]
 
@@ -74,9 +79,7 @@
 
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:main "ghe.dev"
-                                                         :source-map true}}
-}
-}}
+                                                         :source-map true}}}}}
 
              :uberjar {:hooks [leiningen.cljsbuild minify-assets.plugin/hooks]
                        :env {:production true}

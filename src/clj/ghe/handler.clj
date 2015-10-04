@@ -16,6 +16,7 @@
      [:meta {:name "viewport"
              :content "width=device-width, initial-scale=1"}]
      (include-css "//maxcdn.bootstrapcdn.com/bootswatch/3.3.5/lumen/bootstrap.min.css")
+     (include-css "//rawgit.com/masayuki0812/c3/master/c3.css")
      (include-css (if (env :dev) "css/site.css" "css/site.min.css"))]
     [:body
      [:div#app

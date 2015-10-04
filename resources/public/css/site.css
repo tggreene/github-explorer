@@ -2,7 +2,7 @@ body {
   font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
   max-width: 600px;
   margin: 0 auto;
-  padding-top: 72px;
+  padding-top: 2rem;
   -webkit-font-smoothing: antialiased;
   font-size: 1.125em;
   color: #333;
@@ -12,6 +12,7 @@ body {
 h1, h2, h3 {
   color: #000;
 }
+
 h1 {
   font-size: 2.5em
 }
@@ -31,4 +32,13 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+input:focus {
+    box-shadow: none;
+}
+
+.graph {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
 }
